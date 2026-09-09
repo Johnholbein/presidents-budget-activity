@@ -1210,7 +1210,7 @@ const OPTS=[
 ];
 
 /* ===== state ===== */
-let team="Team", cat="health", sel={}, submitted=false, story=null, strategy=null, defendPlan="", defendScore=null, whipPitches={}, whipScores={}, finalized=false;
+let team="Team", cat="health", sel={}, submitted=false, story=null, strategy=null, defendPlan="", defendScore=null, whipPitches={}, whipScores={}, whipLockedWins={}, finalized=false;
 let aiVoiceJob={key:"",status:"idle",parts:[],error:""};
 
 const chosen=()=>OPTS.filter(o=>sel[o.id]!=null);
@@ -1592,18 +1592,48 @@ function whipScoreTarget(target,text){
     const terms=(attacked.match(/[a-z]{5,}/g)||[]).filter(w=>!["federal","spending","budget"].includes(w));
     if(terms.some(w=>t.includes(w))) pts++;
   }
-  const won=pts>=4;
-  return {pts,won,votes:won?target.votes:0,label:won?"Whipped":"Still undecided",words};
+  const ready=pts>=5;
+  const won=!!(whipLockedWins&&whipLockedWins[target.id]);
+  return {pts,ready,won,votes:won?target.votes:0,label:won?"Persuaded":ready?"Strong pitch":"Still undecided",words};
 }
-function scoreWhipPitches(){
+function scoreWhipPitches(opts={}){
+  const lock=!!opts.lock;
   const out={};
-  WHIP_TARGETS.forEach(t=>{ out[t.id]=whipScoreTarget(t,whipPitches[t.id]||""); });
+  WHIP_TARGETS.forEach(t=>{
+    const scored=whipScoreTarget(t,whipPitches[t.id]||"");
+    if(whipLockedWins[t.id]){
+      scored.won=true;
+      scored.votes=t.votes;
+      scored.label="Persuaded";
+    }
+    out[t.id]=scored;
+  });
+  if(lock){
+    const alreadyWon=WHIP_TARGETS.filter(t=>whipLockedWins[t.id]).length;
+    const maxNewWins=alreadyWon ? 1 : 2;
+    const candidates=WHIP_TARGETS
+      .filter(t=>!whipLockedWins[t.id] && out[t.id] && out[t.id].ready)
+      .sort((a,b)=>
+        (out[b.id].pts-out[a.id].pts) ||
+        ((plain(whipPitches[b.id]||"").length)-(plain(whipPitches[a.id]||"").length)) ||
+        a.name.localeCompare(b.name));
+    candidates.slice(0,maxNewWins).forEach(t=>{
+      whipLockedWins[t.id]=true;
+      out[t.id].won=true;
+      out[t.id].votes=t.votes;
+      out[t.id].label="Persuaded";
+    });
+  }
   whipScores=out;
   return out;
 }
 function whipTargetBonus(){
-  const scores=scoreWhipPitches();
-  return WHIP_TARGETS.reduce((sum,t)=>sum+(scores[t.id]&&scores[t.id].votes||0),0);
+  return WHIP_TARGETS.reduce((sum,t)=>sum+(whipLockedWins[t.id]?t.votes:0),0);
+}
+function targetScoreLabel(sc,t){
+  if(sc.won) return `Persuaded · ${t.votes} of ${t.votes} votes secured`;
+  if(sc.ready) return `Strong pitch · ready to test when you lock the count`;
+  return `Still undecided · 0 of ${t.votes} votes secured`;
 }
 const TRUMP_IMAGES=[
   {src:"U7SNGVFTGII6NO3WLUCROIKBCM.jpg",alt:"President Trump in a television frame",pos:"center 38%"},
@@ -1835,7 +1865,18 @@ function renderTargets(){
   const total=WHIP_TARGETS.reduce((s,t)=>s+t.votes,0);
   $("#targetTotal").textContent=`${whipTargetBonus()} of ${total} votes secured`;
   const box=$("#targetCards"); box.innerHTML="";
-  WHIP_TARGETS.forEach(t=>{
+  const retry=Object.keys(whipLockedWins).length>0;
+  const visibleTargets=retry ? WHIP_TARGETS.filter(t=>!whipLockedWins[t.id]) : WHIP_TARGETS;
+  if(!visibleTargets.length){
+    box.innerHTML=`<div class="panel" style="grid-column:1/-1;background:var(--paper)">
+      <div class="panel-b">
+        <p style="margin:0;color:var(--ink-2)">All four on-the-fence members have been persuaded. Continue to the report to see the votes they bring into the full count.</p>
+      </div>
+    </div>`;
+    show("targets");
+    return;
+  }
+  visibleTargets.forEach(t=>{
     const m=memberByBio(t.bio)||{bio:t.bio,name:t.name,p:"R",district:t.seat,ideol:0,vs:""};
     const sc=whipScores[t.id]||whipScoreTarget(t,whipPitches[t.id]||"");
     const card=el("div","target"+(t.video?" has-video":"")+(sc.won?" won":""));
@@ -1848,7 +1889,7 @@ function renderTargets(){
         <p class="pos"><strong>What ${t.pronoun} needs:</strong> ${esc(t.wants)}</p>
         <label for="pitch-${t.id}">Your whip pitch</label>
         <textarea id="pitch-${t.id}" maxlength="700" placeholder="Give ${esc(t.name.split(" ")[0])} a reason to bring these votes with leadership.">${esc(whipPitches[t.id]||"")}</textarea>
-        <div class="score" id="score-${t.id}">${sc.label} · ${sc.votes} of ${t.votes} votes</div>
+        <div class="score" id="score-${t.id}">${targetScoreLabel(sc,t)}</div>
       </div>`;
     const img=card.querySelector("img");
     if(img) img.addEventListener("error",()=>{ img.style.visibility="hidden"; },{once:true});
@@ -1859,7 +1900,7 @@ function renderTargets(){
       const next=whipScoreTarget(t,ta.value);
       whipScores[t.id]=next;
       card.classList.toggle("won",next.won);
-      score.textContent=`${next.label} · ${next.votes} of ${t.votes} votes`;
+      score.textContent=targetScoreLabel(next,t);
       $("#targetTotal").textContent=`${whipTargetBonus()} of ${total} votes secured`;
     });
   });
@@ -1881,6 +1922,7 @@ function renderTargetResults(){
     const pitch=plain(whipPitches[t.id]||"").trim();
     const why=sc.won
       ? `Persuaded. ${t.name} brings ${sc.votes} vote${sc.votes===1?"":"s"} from ${t.bloc}.`
+      : sc.ready ? `${t.name} stayed open in this round. Leadership can only lock down so many wavering blocs at once; revise if you want to keep working this member.`
       : pitch ? `${t.name} stayed open. The pitch did not give enough of the specific cover this member needed.`
         : `${t.name} stayed open. No pitch was entered.`;
     return `<div class="target-result ${sc.won?"won":"open"}">
@@ -2818,8 +2860,9 @@ function factions(){
       why:`${dq.label}. The answer gives wavering members enough of a local rationale to move ${db} vote${db===1?"":"s"}.`});
   }
   if(tb>0){
+    const wonNames=WHIP_TARGETS.filter(t=>whipLockedWins[t.id]).map(t=>t.name).join(", ");
     F.push({n:"Members won in the whip operation",s:tb,no:false,
-      why:`Targeted member work secured ${tb} vote${tb===1?"":"s"} from the on-the-fence blocs before the final count.`});
+      why:`Targeted member work secured ${tb} vote${tb===1?"":"s"} from the on-the-fence blocs before the final count: ${wonNames}.`});
   }
   F.push({n:"Opposition no votes",s:Math.max(0,173-db-tb),minority:true,no:true,
     why: cross?`Most of the opposition still votes no, even with the revenue-only compromise.`
@@ -3000,7 +3043,7 @@ $("#startBtn").addEventListener("click",()=>{
 $("#submitBtn").addEventListener("click",()=>{
   if(!chosen().length){ alert("Choose at least one option before submitting."); return; }
   primeAudio();
-  story=null; strategy=null; defendPlan=""; defendScore=null; whipPitches={}; whipScores={}; finalized=false;
+  story=null; strategy=null; defendPlan=""; defendScore=null; whipPitches={}; whipScores={}; whipLockedWins={}; finalized=false;
   if(!prepareStory()){ submitted=true; lastSim="whip"; goWhip(); return; }
   startAiVoiceover(story.opt,story.lines);
   submitted=true; lastSim="hold"; renderHold();
@@ -3009,13 +3052,13 @@ $("#backToBuild").addEventListener("click",()=>{lastSim="build";renderAll();show
 $("#toReceipt").addEventListener("click",()=>{finalized=true;lastSim="receipt";renderReceipt()});
 $("#holdContinue").addEventListener("click",()=>{primeAudio();lastSim="story";renderStory({autoSpot:true})});
 $("#holdRevise").addEventListener("click",()=>{lastSim="build";renderAll();show("build")});
-$("#targetsSubmit").addEventListener("click",()=>{scoreWhipPitches();lastSim="targetResults";goTargetResults()});
+$("#targetsSubmit").addEventListener("click",()=>{scoreWhipPitches({lock:true});lastSim="targetResults";goTargetResults()});
 $("#backToTargets").addEventListener("click",()=>{lastSim="targets";renderTargets()});
 $("#continueToWhip").addEventListener("click",()=>{lastSim="whip";goWhip()});
 $("#reviseBtn").addEventListener("click",()=>{lastSim="build";renderAll();show("build")});
 $("#printBtn").addEventListener("click",()=>window.print());
 $("#restartBtn").addEventListener("click",()=>{
-  sel={};story=null;strategy=null;defendPlan="";defendScore=null;whipPitches={};whipScores={};submitted=false;finalized=false;clearAiVoiceover();
+  sel={};story=null;strategy=null;defendPlan="";defendScore=null;whipPitches={};whipScores={};whipLockedWins={};submitted=false;finalized=false;clearAiVoiceover();
   lastSim="brief";viewStack=[];show("brief",{push:false});
 });
 
