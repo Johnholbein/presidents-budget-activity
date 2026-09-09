@@ -364,6 +364,22 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
 .target .score{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);margin-top:8px}
 .target.won{border-color:color-mix(in srgb,var(--save) 42%,var(--rule));box-shadow:0 0 0 2px color-mix(in srgb,var(--save) 18%,transparent), var(--shadow-soft)}
 .target.won .score{color:var(--save)}
+.target-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.target-result{
+  display:grid;grid-template-columns:74px 1fr auto;gap:13px;align-items:start;padding:14px;
+  border:1px solid var(--rule);background:var(--panel);
+}
+.target-result img{width:74px;height:92px;object-fit:cover;border:1px solid var(--rule);background:var(--rule-soft)}
+.target-result h4{margin:0 0 2px;font-family:Newsreader,Georgia,serif;font-size:19px;font-weight:500}
+.target-result .trm{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.target-result .why{margin:0;color:var(--ink-2);font-size:13.3px;line-height:1.42}
+.target-result .badge{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 7px;border:1px solid currentColor;white-space:nowrap;
+}
+.target-result.won{border-color:color-mix(in srgb,var(--save) 45%,var(--rule));background:color-mix(in srgb,var(--save-bg) 34%,var(--panel))}
+.target-result.won .badge{color:var(--save)}
+.target-result.open .badge{color:var(--cost)}
 
 /* ---------- whip ---------- */
 .whipgrid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
@@ -604,6 +620,10 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
   .target img{width:76px;height:94px}
   .target.has-video{grid-template-columns:1fr}
   .target-video{max-width:220px}
+  .target-results{grid-template-columns:1fr}
+  .target-result{grid-template-columns:58px 1fr}
+  .target-result img{width:58px;height:72px}
+  .target-result .badge{grid-column:2;justify-self:start}
 }
 @media print{
   .topbar,.submitbar,.shotnote{display:none}
@@ -826,6 +846,27 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
         <div class="targets" id="targetCards"></div>
         <div style="margin-top:16px;display:flex;justify-content:flex-end">
           <button class="btn" id="targetsSubmit">Lock the whip count</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TARGET RESULTS ================= -->
+<div class="view" id="view-target-results" hidden>
+  <div class="stage" style="max-width:1100px">
+    <span class="kicker">Thursday morning · whip report</span>
+    <h2>Here is who moved.</h2>
+    <p class="lede" id="targetResultLede">The whip team has counted the on-the-fence members you worked.</p>
+  </div>
+  <div class="stage" style="max-width:1100px;margin-top:18px">
+    <div class="panel">
+      <div class="panel-h"><span>On-the-fence result</span><span class="mono" id="targetResultTotal">0 votes secured</span></div>
+      <div class="panel-b">
+        <div class="target-results" id="targetResultCards"></div>
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap">
+          <button class="btn ghost" id="backToTargets">Revise whip pitches</button>
+          <button class="btn" id="continueToWhip">Continue to the whip count</button>
         </div>
       </div>
     </div>
@@ -1825,6 +1866,36 @@ function renderTargets(){
   show("targets");
 }
 function goTargets(){ lastSim="targets"; renderTargets(); }
+function renderTargetResults(){
+  scoreWhipPitches();
+  const total=WHIP_TARGETS.reduce((s,t)=>s+t.votes,0);
+  const won=WHIP_TARGETS.filter(t=>whipScores[t.id]&&whipScores[t.id].won);
+  const votes=whipTargetBonus();
+  $("#targetResultTotal").textContent=`${votes} of ${total} votes secured`;
+  $("#targetResultLede").textContent = votes
+    ? `Your pitches persuaded ${won.length} of ${WHIP_TARGETS.length} on-the-fence member${won.length===1?"":"s"}, bringing ${votes} vote${votes===1?"":"s"} toward the budget.`
+    : "None of the on-the-fence members moved. The full whip count will have to pass without their blocs.";
+  $("#targetResultCards").innerHTML=WHIP_TARGETS.map(t=>{
+    const m=memberByBio(t.bio)||{bio:t.bio,name:t.name,p:"R",district:t.seat,ideol:0,vs:""};
+    const sc=whipScores[t.id]||whipScoreTarget(t,whipPitches[t.id]||"");
+    const pitch=plain(whipPitches[t.id]||"").trim();
+    const why=sc.won
+      ? `${t.name} brings ${sc.votes} vote${sc.votes===1?"":"s"} from ${t.bloc}.`
+      : pitch ? `${t.name} stayed open. The pitch did not give enough of the specific cover this member needed.`
+        : `${t.name} stayed open. No pitch was entered.`;
+    return `<div class="target-result ${sc.won?"won":"open"}">
+      <img src="${memberPhoto(m)}" alt="${esc(t.name)}" decoding="async">
+      <div>
+        <h4>${esc(t.name)}</h4>
+        <div class="trm">${esc(t.seat)} · ${esc(t.bloc)}</div>
+        <p class="why">${esc(why)}</p>
+      </div>
+      <span class="badge">${sc.won?"Won":"Open"} · ${sc.votes}/${t.votes}</span>
+    </div>`;
+  }).join("");
+  show("targetResults");
+}
+function goTargetResults(){ lastSim="targetResults"; renderTargetResults(); }
 
 /* ===== the attack spot ===== */
 /* ============================================================================
@@ -2887,7 +2958,7 @@ function renderBaseTables(){
 }
 
 /* ===== nav ===== */
-const VIEWS={brief:"#view-brief",build:"#view-build",story:"#view-story",targets:"#view-targets",whip:"#view-whip",
+const VIEWS={brief:"#view-brief",build:"#view-build",story:"#view-story",targets:"#view-targets",targetResults:"#view-target-results",whip:"#view-whip",
   receipt:"#view-receipt",hold:"#view-hold",base:"#view-base",debrief:"#view-debrief"};
 let currentView="brief", viewStack=[];
 function show(v,opts={}){
@@ -2896,7 +2967,7 @@ function show(v,opts={}){
   currentView=v;
   Object.keys(VIEWS).forEach(k=>$(VIEWS[k]).hidden=(k!==v));
   $(".submitbar").style.display = v==="build" ? "" : "none";
-  const map={brief:"#tab-sim",build:"#tab-sim",story:"#tab-sim",targets:"#tab-sim",whip:"#tab-sim",receipt:"#tab-sim",hold:"#tab-sim",base:"#tab-base",debrief:"#tab-debrief"};
+  const map={brief:"#tab-sim",build:"#tab-sim",story:"#tab-sim",targets:"#tab-sim",targetResults:"#tab-sim",whip:"#tab-sim",receipt:"#tab-sim",hold:"#tab-sim",base:"#tab-base",debrief:"#tab-debrief"};
   ["#tab-sim","#tab-base","#tab-debrief"].forEach(t=>$(t).setAttribute("aria-selected",t===map[v]?"true":"false"));
   const bb=$("#backBtn"); if(bb) bb.disabled=!viewStack.length;
   window.scrollTo({top:0,behavior:"instant"});
@@ -2914,7 +2985,7 @@ $("#tab-sim").addEventListener("click",()=>show(lastSim));
 $("#tab-base").addEventListener("click",()=>{if(!$("#view-base").hidden)return;renderBaseTables();show("base")});
 $("#tab-debrief").addEventListener("click",()=>show("debrief"));
 $("#backBtn").addEventListener("click",goBack);
-["brief","build","story","targets","whip","receipt"].forEach(()=>{});
+["brief","build","story","targets","targetResults","whip","receipt"].forEach(()=>{});
 
 $("#startBtn").addEventListener("click",()=>{
   team=($("#teamName").value||"").trim();
@@ -2938,7 +3009,9 @@ $("#backToBuild").addEventListener("click",()=>{lastSim="build";renderAll();show
 $("#toReceipt").addEventListener("click",()=>{finalized=true;lastSim="receipt";renderReceipt()});
 $("#holdContinue").addEventListener("click",()=>{primeAudio();lastSim="story";renderStory({autoSpot:true})});
 $("#holdRevise").addEventListener("click",()=>{lastSim="build";renderAll();show("build")});
-$("#targetsSubmit").addEventListener("click",()=>{scoreWhipPitches();lastSim="whip";goWhip()});
+$("#targetsSubmit").addEventListener("click",()=>{scoreWhipPitches();lastSim="targetResults";goTargetResults()});
+$("#backToTargets").addEventListener("click",()=>{lastSim="targets";renderTargets()});
+$("#continueToWhip").addEventListener("click",()=>{lastSim="whip";goWhip()});
 $("#reviseBtn").addEventListener("click",()=>{lastSim="build";renderAll();show("build")});
 $("#printBtn").addEventListener("click",()=>window.print());
 $("#restartBtn").addEventListener("click",()=>{
