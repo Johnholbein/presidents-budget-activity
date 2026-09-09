@@ -2737,7 +2737,9 @@ function attachHouseMembers(F){
     .filter(t=>whipScores[t.id]&&whipScores[t.id].won)
     .map(t=>memberByBio(t.bio))
     .filter(Boolean);
-  assign("Members won in the whip operation",wonTargets.concat([...reps].sort((a,b)=>a.ideol-b.ideol)));
+  const targetBios=new Set(WHIP_TARGETS.map(t=>t.bio));
+  const whipFillers=[...reps].filter(m=>!targetBios.has(m.bio)).sort((a,b)=>a.ideol-b.ideol);
+  assign("Members won in the whip operation",wonTargets.concat(whipFillers));
   assign("Deficit hardliners",[...reps].sort((a,b)=>b.ideol-a.ideol));
   assign("Swing-district members",[...reps].sort((a,b)=>a.ideol-b.ideol));
   assign("Farm and rural bloc",[...reps].sort((a,b)=>
