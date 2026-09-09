@@ -345,11 +345,11 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
   background:#fff;box-shadow:var(--shadow-soft)
 }
 .target img{width:92px;height:112px;object-fit:cover;background:var(--rule-soft);border:1px solid var(--rule)}
-.target.has-video{grid-template-columns:1fr}
+.target.has-video{grid-template-columns:minmax(132px,160px) 1fr;align-items:start}
 .target-video{
   position:relative;border:1px solid var(--rule);background:#05070B;overflow:hidden;
 }
-.target-video video{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#05070B}
+.target-video video{display:block;width:100%;aspect-ratio:9/16;object-fit:cover;background:#05070B}
 .target-video .simlabel{
   position:absolute;left:8px;bottom:8px;background:rgba(5,7,11,.82);color:#fff;
   font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
@@ -603,6 +603,7 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
   .target{grid-template-columns:76px 1fr}
   .target img{width:76px;height:94px}
   .target.has-video{grid-template-columns:1fr}
+  .target-video{max-width:220px}
 }
 @media print{
   .topbar,.submitbar,.shotnote{display:none}
@@ -1806,7 +1807,7 @@ function renderTargets(){
         <div class="score" id="score-${t.id}">${sc.label} · ${sc.votes} of ${t.votes} votes</div>
       </div>`;
     const img=card.querySelector("img");
-    img.addEventListener("error",()=>{ img.style.visibility="hidden"; },{once:true});
+    if(img) img.addEventListener("error",()=>{ img.style.visibility="hidden"; },{once:true});
     box.appendChild(card);
     const ta=card.querySelector("textarea"), score=card.querySelector(".score");
     ta.addEventListener("input",()=>{
@@ -2268,31 +2269,41 @@ function stopAiAudio(){
   try{ aiAudio.pause(); aiAudio.removeAttribute("src"); aiAudio.load(); }catch(e){}
   aiAudio=null;
 }
-function playAiVoice(i,fallbackText){
+function playAiVoicePart(i,onDone){
   if(!aiVoiceReady()||!soundOn) return false;
   const part=aiVoiceJob.parts[i];
   if(!part||!part.url) return false;
   try{
     const a=new Audio(part.url);
     aiAudio=a; a.volume=1;
+    let done=false;
+    const finishDone=()=>{ if(done) return; done=true; if(typeof onDone==="function") onDone(); };
     const finish=()=>{
       if(aiAudio!==a) return;
       aiAudio=null; voActive=false; duck(false);
+      finishDone();
     };
     a.onplay=()=>{ voHeard=true; hideTapPrompt(); if(!voActive){ voActive=true; duck(true); } };
     a.onended=finish;
-    a.onerror=()=>{ finish(); if(fallbackText) say(fallbackText); };
+    a.onerror=finish;
     const started=a.play();
-    if(started&&started.catch) started.catch(()=>{ finish(); if(fallbackText) say(fallbackText); });
+    if(started&&started.catch) started.catch(finish);
     return true;
   }catch(e){
     return false;
   }
 }
-function speakBeatVoice(b,i){
-  if(!soundOn||!b.vo) return;
-  if(playAiVoice(i,b.vo)) return;
-  if(ALLOW_BROWSER_TTS_FALLBACK) say(b.vo);
+function playAiVoice(i,fallbackText){
+  if(playAiVoicePart(i)) return true;
+  if(fallbackText) say(fallbackText);
+  return false;
+}
+function speakBeatVoice(b,i,onDone){
+  const done=()=>{ if(typeof onDone==="function") onDone(); };
+  if(!soundOn||!b.vo){ done(); return; }
+  if(playAiVoicePart(i,done)) return;
+  if(ALLOW_BROWSER_TTS_FALLBACK) say(b.vo,done);
+  else done();
 }
 let voActive=false, voHeard=false, speakChain=null, voGen=0;
 function stopSpeech(){
@@ -2302,9 +2313,13 @@ function stopSpeech(){
   try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
   voActive=false; duck(false);
 }
-function speakParts(parts,i,gen){
+function speakParts(parts,i,gen,onDone){
   if(gen!==voGen) return;                    // a newer beat has taken over
-  if(!soundOn||!window.speechSynthesis||!parts||i>=parts.length){ voActive=false; duck(false); return; }
+  if(!soundOn||!window.speechSynthesis||!parts||i>=parts.length){
+    voActive=false; duck(false);
+    if(typeof onDone==="function") onDone();
+    return;
+  }
   const text=parts[i], last=(i===parts.length-1);
   const u=new SpeechSynthesisUtterance(text);
   try{ if(chosenVoice) u.voice=chosenVoice; }catch(e){}
@@ -2317,8 +2332,8 @@ function speakParts(parts,i,gen){
     if(moved) return; moved=true;
     if(speakChain){ clearTimeout(speakChain); speakChain=null; }
     if(gen!==voGen) return;                  // cancelled: do not continue this line
-    if(last){ voActive=false; duck(false); }
-    else speakChain=setTimeout(()=>speakParts(parts,i+1,gen),prosody.pause);
+    if(last){ voActive=false; duck(false); if(typeof onDone==="function") onDone(); }
+    else speakChain=setTimeout(()=>speakParts(parts,i+1,gen,onDone),prosody.pause);
   };
   u.onstart=()=>{ if(gen!==voGen) return; voHeard=true; hideTapPrompt(); if(!voActive){ voActive=true; duck(true); } };
   u.onend=advance; u.onerror=advance;
@@ -2326,12 +2341,12 @@ function speakParts(parts,i,gen){
   /* Chrome sometimes never fires onend. Advance on an estimate if it does not. */
   speakChain=setTimeout(advance, Math.max(1100, text.length*72) + 520);
 }
-function say(text){
+function say(text,onDone){
   if(!ALLOW_BROWSER_TTS_FALLBACK||!soundOn||!window.speechSynthesis||!text) return;
   /* No resume() watchdog here on purpose: resuming a queue that has just been
      cancelled makes Chrome replay utterances. Clauses are short enough not to
      hit Chrome's long-utterance pause. */
-  speakParts(clauses(text),0,++voGen);
+  speakParts(clauses(text),0,++voGen,onDone);
 }
 function startBed(){
   if(!soundOn) return;
@@ -2374,7 +2389,7 @@ function thud(){
 const deEnt=t=>{const d=document.createElement("textarea");d.innerHTML=t;return d.value.replace(/[“”"]/g,"")};
 
 /* --- the spot itself --- */
-let spotRAF=null, spotT0=0, spotBeats=[];
+let spotRAF=null, spotT0=0, spotBeats=[], spotRunId=0, activeBeatIndex=-1, activeBeatStart=0;
 let spotLen=25600;
 function spokenAmount(v){
   return v>=1000 ? (v/1000).toFixed(1).replace(/\.0$/,"")+" trillion dollars" : Math.round(v)+" billion dollars";
@@ -2459,63 +2474,75 @@ function showTapPrompt(){
   }
   b.hidden=false;
 }
-function runSpot(){
-  cancelAnimationFrame(spotRAF); clearVo(); hideTapPrompt(); startBed();
-  const nextBtn=$("#spotNext"); if(nextBtn) nextBtn.hidden=true;
-  spotT0=performance.now();
-  /* If nothing has actually been spoken shortly after the spot starts, the browser
-     blocked it. Say so, and offer a direct click — which always counts as a gesture. */
-  if(soundOn && (aiVoiceReady()||ALLOW_BROWSER_TTS_FALLBACK)) voTimers.push(setTimeout(()=>{ if(!voHeard) showTapPrompt(); },1700));
-  const nodes=$$("#spotBeats .beat"), fig=$("#spotBeats .fig");
-  const target=fig?parseInt(fig.dataset.count,10):0;
-  const amountBeat=spotBeats.find(b=>b.count);
-  nodes.forEach(n=>n.querySelectorAll(".clipframe").forEach(f=>f.removeAttribute("src")));
-  spotBeats.forEach((b,i)=>{
-    const speak=()=>{
-      thud();
-      /* Drop anything still speaking from the previous beat. Without this a slow
-         utterance queues behind the next one and the voice falls progressively
-         further behind the visuals. */
-      stopSpeech();
-      speakBeatVoice(b,i);
-    };
-    if(i===0) speak();
-    else voTimers.push(setTimeout(speak, b.t+40));
-  });
-  let lastActive=-1;
-  const step=now=>{
-    const t=now-spotT0;
-    let active=-1;
-    nodes.forEach((n,i)=>{
-      const b=spotBeats[i], on=(t>=b.t && t<b.t+b.d);
-      n.classList.toggle("on",on); if(on) active=i;
+const waitMs=ms=>new Promise(resolve=>voTimers.push(setTimeout(resolve,ms)));
+function setSpotBeat(i){
+  activeBeatIndex=i;
+  activeBeatStart=performance.now();
+  const nodes=$$("#spotBeats .beat");
+  nodes.forEach((n,j)=>{
+    const on=i===j;
+    n.classList.toggle("on",on);
+    n.querySelectorAll(".clipframe").forEach(f=>{
+      if(on && !f.getAttribute("src")) f.setAttribute("src",f.dataset.src);
+      if(!on && f.getAttribute("src")) f.removeAttribute("src");
     });
-    if(spotBeats[active] && spotBeats[active].clip) hideTapPrompt();
-    if(active!==lastActive){
-      nodes.forEach((n,i)=>n.querySelectorAll(".clipframe").forEach(f=>{
-        if(i===active && !f.getAttribute("src")) f.setAttribute("src",f.dataset.src);
-        if(i!==active && f.getAttribute("src")) f.removeAttribute("src");
-      }));
-      if(spotBeats[active] && spotBeats[active].clip) hideTapPrompt();
-      lastActive=active;
-    }
+  });
+  if(spotBeats[i] && spotBeats[i].clip) hideTapPrompt();
+}
+function startSpotProgress(runId){
+  const fig=$("#spotBeats .fig"), amountBeatIndex=spotBeats.findIndex(b=>b.count);
+  const target=fig?parseInt(fig.dataset.count,10):0;
+  const step=now=>{
+    if(runId!==spotRunId) return;
+    const t=now-spotT0;
     if(fig){
-      const countStart=amountBeat ? amountBeat.t+300 : 4100;
-      const countSpan=amountBeat ? Math.min(2600,Math.max(1400,amountBeat.d*.45)) : 2200;
-      const p=Math.max(0,Math.min(1,(t-countStart)/countSpan)), e=1-Math.pow(1-p,3);
-      fig.textContent=fmtB(Math.round(target*e));
+      const b=spotBeats[activeBeatIndex];
+      if(activeBeatIndex>amountBeatIndex) fig.textContent=fmtB(target);
+      else if(b&&b.count){
+        const p=Math.max(0,Math.min(1,(now-activeBeatStart-300)/Math.min(2600,Math.max(1400,(b.d||3200)*.45))));
+        const e=1-Math.pow(1-p,3);
+        fig.textContent=fmtB(Math.round(target*e));
+      }
     }
     $("#spotBar").style.width=Math.min(100,t/spotLen*100)+"%";
     const total=Math.ceil(spotLen/1000);
     $("#spotTc").textContent=":"+String(Math.min(total,Math.floor(t/1000))).padStart(2,"0")+" / :"+String(total).padStart(2,"0");
-    if(t<spotLen+400) spotRAF=requestAnimationFrame(step);
-    else {
-      nodes.forEach((n,i)=>n.classList.toggle("on", i===nodes.length-1));
-      stopBed();
-      if(nextBtn){ nextBtn.hidden=false; nextBtn.focus(); }
-    }
+    spotRAF=requestAnimationFrame(step);
   };
   spotRAF=requestAnimationFrame(step);
+}
+async function runSpot(){
+  const runId=++spotRunId;
+  cancelAnimationFrame(spotRAF); clearVo(); hideTapPrompt(); startBed();
+  const nextBtn=$("#spotNext"); if(nextBtn) nextBtn.hidden=true;
+  voHeard=false;
+  spotT0=performance.now();
+  /* If nothing has actually been spoken shortly after the spot starts, the browser
+     blocked it. Say so, and offer a direct click — which always counts as a gesture. */
+  if(soundOn && (aiVoiceReady()||ALLOW_BROWSER_TTS_FALLBACK)) voTimers.push(setTimeout(()=>{ if(!voHeard) showTapPrompt(); },1700));
+  $$("#spotBeats .beat .clipframe").forEach(f=>f.removeAttribute("src"));
+  startSpotProgress(runId);
+  for(let i=0;i<spotBeats.length;i++){
+    if(runId!==spotRunId) return;
+    const b=spotBeats[i];
+    setSpotBeat(i);
+    thud();
+    stopSpeech();
+    let speechDone=false;
+    const speechDonePromise=new Promise(resolve=>{
+      speakBeatVoice(b,i,()=>{ speechDone=true; resolve(); });
+    });
+    const minOnScreen=waitMs(b.min||1800);
+    const maxOnScreen=waitMs(Math.max((b.d||0)+1800, estimateSpeechMs(b.vo)+5200, (b.min||0)+4200));
+    await minOnScreen;
+    if(!speechDone) await Promise.race([speechDonePromise,maxOnScreen]);
+    await waitMs(220);
+  }
+  if(runId!==spotRunId) return;
+  cancelAnimationFrame(spotRAF);
+  $("#spotBar").style.width="100%";
+  stopBed();
+  if(nextBtn){ nextBtn.hidden=false; nextBtn.focus(); }
 }
 function openSpot(){
   if(!story) return;
@@ -2527,6 +2554,7 @@ function openSpot(){
   runSpot();
 }
 function closeSpot(){
+  spotRunId++;
   cancelAnimationFrame(spotRAF); clearVo(); stopBed();
   $$("#spotBeats .clipframe").forEach(f=>f.removeAttribute("src"));
   const nextBtn=$("#spotNext"); if(nextBtn) nextBtn.hidden=true;
