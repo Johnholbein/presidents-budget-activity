@@ -345,6 +345,16 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
   background:#fff;box-shadow:var(--shadow-soft)
 }
 .target img{width:92px;height:112px;object-fit:cover;background:var(--rule-soft);border:1px solid var(--rule)}
+.target.has-video{grid-template-columns:1fr}
+.target-video{
+  position:relative;border:1px solid var(--rule);background:#05070B;overflow:hidden;
+}
+.target-video video{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#05070B}
+.target-video .simlabel{
+  position:absolute;left:8px;bottom:8px;background:rgba(5,7,11,.82);color:#fff;
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  padding:4px 6px;border:1px solid rgba(255,255,255,.28);
+}
 .target h4{margin:0;font-size:18px;font-family:Newsreader,Georgia,serif}
 .target .tm{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:2px 0 8px}
 .target .pos{margin:0 0 10px;color:var(--ink-2);font-size:13.5px;line-height:1.4}
@@ -592,6 +602,7 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
   .adphotos{grid-template-columns:repeat(2,minmax(0,1fr))}
   .target{grid-template-columns:76px 1fr}
   .target img{width:76px;height:94px}
+  .target.has-video{grid-template-columns:1fr}
 }
 @media print{
   .topbar,.submitbar,.shotnote{display:none}
@@ -1494,6 +1505,7 @@ function defenseBonus(){
 }
 const WHIP_TARGETS=[
   {id:"bacon",bio:"B001298",name:"Don Bacon",seat:"NE-02",bloc:"10 swing-district Republicans",votes:10,pronoun:"he",
+   video:"don-bacon-simulated-statement.mp4",
    position:"He can live with deficit reduction, but not a package that looks like a Medicaid attack ad in an Omaha swing district.",
    wants:"Protect vulnerable constituents, give him local cover, and explain why the attacked line is not a benefit cut.",
    keys:["medicaid","district","omaha","hospital","protect","coverage","constituent","phase","grandfather","waiver"]},
@@ -1511,6 +1523,15 @@ const WHIP_TARGETS=[
    keys:["middle","suburban","tax","salt","senior","social security","medicare","afford","family","local"]},
 ];
 function memberByBio(bio){ return HOUSE.find(m=>m.bio===bio) || null; }
+function targetMedia(t,m){
+  if(t.video){
+    return `<div class="target-video">
+      <video src="${esc(t.video)}" poster="${memberPhoto(m)}" controls preload="metadata" playsinline aria-label="${esc(t.name)} simulated classroom statement"></video>
+      <span class="simlabel">AI-generated classroom simulation</span>
+    </div>`;
+  }
+  return `<img src="${memberPhoto(m)}" alt="${esc(t.name)}" decoding="async">`;
+}
 function whipScoreTarget(target,text){
   const raw=plain(text).trim(), t=raw.toLowerCase();
   const words=(t.match(/\b[\w'-]+\b/g)||[]).length;
@@ -1772,9 +1793,9 @@ function renderTargets(){
   WHIP_TARGETS.forEach(t=>{
     const m=memberByBio(t.bio)||{bio:t.bio,name:t.name,p:"R",district:t.seat,ideol:0,vs:""};
     const sc=whipScores[t.id]||whipScoreTarget(t,whipPitches[t.id]||"");
-    const card=el("div","target"+(sc.won?" won":""));
+    const card=el("div","target"+(t.video?" has-video":"")+(sc.won?" won":""));
     card.innerHTML=`
-      <img src="${memberPhoto(m)}" alt="${esc(t.name)}" decoding="async">
+      ${targetMedia(t,m)}
       <div>
         <h4>${esc(t.name)}</h4>
         <div class="tm">${esc(t.seat)} · carries ${t.votes} votes · ${esc(t.bloc)}</div>
