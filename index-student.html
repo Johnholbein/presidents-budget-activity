@@ -856,12 +856,12 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
 <div class="view" id="view-target-results" hidden>
   <div class="stage" style="max-width:1100px">
     <span class="kicker">Thursday morning · whip report</span>
-    <h2>Here is who moved.</h2>
-    <p class="lede" id="targetResultLede">The whip team has counted the on-the-fence members you worked.</p>
+    <h2>Before the full whip count, here is who you persuaded.</h2>
+    <p class="lede" id="targetResultLede">The whip team has counted the four on-the-fence members you worked and the votes they bring with them.</p>
   </div>
   <div class="stage" style="max-width:1100px;margin-top:18px">
     <div class="panel">
-      <div class="panel-h"><span>On-the-fence result</span><span class="mono" id="targetResultTotal">0 votes secured</span></div>
+      <div class="panel-h"><span>Persuaded members</span><span class="mono" id="targetResultTotal">0 votes secured</span></div>
       <div class="panel-b">
         <div class="target-results" id="targetResultCards"></div>
         <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap">
@@ -1873,14 +1873,14 @@ function renderTargetResults(){
   const votes=whipTargetBonus();
   $("#targetResultTotal").textContent=`${votes} of ${total} votes secured`;
   $("#targetResultLede").textContent = votes
-    ? `Your pitches persuaded ${won.length} of ${WHIP_TARGETS.length} on-the-fence member${won.length===1?"":"s"}, bringing ${votes} vote${votes===1?"":"s"} toward the budget.`
-    : "None of the on-the-fence members moved. The full whip count will have to pass without their blocs.";
+    ? `Your pitches persuaded ${won.length} of ${WHIP_TARGETS.length} on-the-fence member${won.length===1?"":"s"}, bringing ${votes} vote${votes===1?"":"s"} into the full whip count.`
+    : "None of the four on-the-fence members moved. The full whip count will have to pass without their blocs.";
   $("#targetResultCards").innerHTML=WHIP_TARGETS.map(t=>{
     const m=memberByBio(t.bio)||{bio:t.bio,name:t.name,p:"R",district:t.seat,ideol:0,vs:""};
     const sc=whipScores[t.id]||whipScoreTarget(t,whipPitches[t.id]||"");
     const pitch=plain(whipPitches[t.id]||"").trim();
     const why=sc.won
-      ? `${t.name} brings ${sc.votes} vote${sc.votes===1?"":"s"} from ${t.bloc}.`
+      ? `Persuaded. ${t.name} brings ${sc.votes} vote${sc.votes===1?"":"s"} from ${t.bloc}.`
       : pitch ? `${t.name} stayed open. The pitch did not give enough of the specific cover this member needed.`
         : `${t.name} stayed open. No pitch was entered.`;
     return `<div class="target-result ${sc.won?"won":"open"}">
@@ -1890,7 +1890,7 @@ function renderTargetResults(){
         <div class="trm">${esc(t.seat)} · ${esc(t.bloc)}</div>
         <p class="why">${esc(why)}</p>
       </div>
-      <span class="badge">${sc.won?"Won":"Open"} · ${sc.votes}/${t.votes}</span>
+      <span class="badge">${sc.won?"Persuaded":"Not persuaded"} · +${sc.votes} vote${sc.votes===1?"":"s"}</span>
     </div>`;
   }).join("");
   show("targetResults");
