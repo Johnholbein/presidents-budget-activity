@@ -2537,7 +2537,8 @@ function playAiVoice(i,fallbackText){
 function speakBeatVoice(b,i,onDone){
   const done=()=>{ if(typeof onDone==="function") onDone(); };
   if(!soundOn||!b.vo){ done(); return; }
-  if(playAiVoicePart(i,done)) return;
+  const voiceIndex = Number.isInteger(b.voiceIndex) ? b.voiceIndex : i;
+  if(playAiVoicePart(voiceIndex,done)) return;
   if(ALLOW_BROWSER_TTS_FALLBACK) say(b.vo,done);
   else done();
 }
@@ -2676,20 +2677,20 @@ function buildSpot(o,lines){
     {d:6000, min:6000, cls:"slate", scene:null, vo:"",
      html:`<p><span class="stamp">Tuesday &middot; 6:14 a.m.</span>
            Your draft budget leaked overnight.<br>The opposition cut this by noon.</p>`},
-    {min:3800, cls:"pan-in", scene:sc, photo:photoFor(0),
+    {min:3800, cls:"pan-in", scene:sc, photo:photoFor(0), voiceIndex:0,
      vo:vo[0],
      html:`<p>${lines[0]}</p>`},
-    {min:4200, cls:"pan-slow dim", scene:sc, photo:photoFor(1), count:true,
+    {min:4200, cls:"pan-slow dim", scene:sc, photo:photoFor(1), count:true, voiceIndex:1,
      vo:vo[1],
      html:`<p><span class="fig" data-count="${Math.round(amt)}">$0</span>
            <span class="figk">${o.n.length>52?o.n.slice(0,52)+"…":o.n} · ${share}% of President Trump's package</span></p>`},
-    {min:3400, cls:"small pan-left", scene:sc, photo:photoFor(2),
+    {min:3400, cls:"small pan-left", scene:sc, photo:photoFor(2), voiceIndex:2,
      vo:vo[2],
      html:`<p>${lines[1]}</p>`},
-    {min:3600, cls:"small pan-right", scene:sc, photo:photoFor(3),
+    {min:3600, cls:"small pan-right", scene:sc, photo:photoFor(3), voiceIndex:3,
      vo:vo[3],
      html:`<p>${lines[2]}</p>`},
-    {min:2800, cls:"end careend", scene:null, vo:vo[4],
+    {min:2800, cls:"end careend", scene:null, voiceIndex:4, vo:vo[4],
      html:`<p>Trump doesn't care.
            <span class="disc">A classroom exercise · LPPP 6350 · not a real advertisement</span></p>`}
   ]);
