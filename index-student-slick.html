@@ -3176,6 +3176,8 @@ function clearSpotProceedGate(){
 function hideTapPrompt(){ const b=$("#spotTap"); if(b) b.hidden=true; }
 function showTapPrompt(){
   const b=$("#spotTap"); if(!b) return;
+  const activeBeat=spotBeats[activeBeatIndex];
+  if(activeBeat && (activeBeat.gate || /\bend\b/.test(activeBeat.cls||""))) return;
   if((!ALLOW_BROWSER_TTS_FALLBACK||!window.speechSynthesis)&&!aiVoiceReady()){
     b.querySelector(".ts-a").textContent="Voiceover unavailable here";
     b.querySelector(".ts-b").textContent=`${AI_TTS_PROVIDER} is not connected for this run`;
@@ -3201,6 +3203,7 @@ function waitForSpotProceed(runId,delay=6000){
     const onClick=()=>{
       if(runId!==spotRunId) return;
       cleanup();
+      hideTapPrompt();
       primeAudio();
       resolve(true);
     };
@@ -3324,7 +3327,7 @@ $("#spotTap").addEventListener("click",()=>{
   hideTapPrompt(); primeAudio();
   const t=performance.now()-spotT0;
   const b=spotBeats.filter(x=>t>=x.t).pop() || spotBeats[0];
-  if(b) speakBeatVoice(b,spotBeats.indexOf(b));
+  if(b && !b.gate && !/\bend\b/.test(b.cls||"")) speakBeatVoice(b,spotBeats.indexOf(b));
 });
 $("#spotReplay").addEventListener("click",()=>{primeAudio();voHeard=false;runSpot()});
 $("#spotClose").addEventListener("click",closeSpot);
