@@ -84,6 +84,11 @@ h1,h2,h3,h4{text-wrap:balance}
   display:flex;align-items:center;gap:16px;flex-wrap:wrap;
 }
 .brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.brand-home{
+  display:flex;align-items:baseline;gap:10px;background:none;border:0;color:inherit;padding:0;text-align:left;
+}
+.brand-home:hover .name{color:var(--ui)}
+.brand-home .name{transition:color .15s ease}
 .brand .name{font-family:Newsreader,Georgia,serif;font-size:21px;font-weight:600;letter-spacing:-.01em}
 .brand .sub{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
 .tabs{display:flex;gap:2px}
@@ -675,8 +680,10 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
 
 <div class="topbar">
   <div class="brand">
-    <span class="name">The President's Budget</span>
-    <span class="sub">LPPP 6350 · Budget TAA</span>
+    <button type="button" class="brand-home" id="homeBtn" aria-label="Return to the opening screen">
+      <span class="name">The President's Budget</span>
+      <span class="sub">LPPP 6350 · Budget TAA</span>
+    </button>
   </div>
   <div class="tabs" role="tablist">
     <button role="tab" id="tab-sim" aria-selected="true">Exercise</button>
@@ -3136,6 +3143,12 @@ $("#tab-sim").addEventListener("click",()=>show(lastSim));
 $("#tab-base").addEventListener("click",()=>{if(!$("#view-base").hidden)return;renderBaseTables();show("base")});
 $("#tab-debrief").addEventListener("click",()=>show("debrief"));
 $("#backBtn").addEventListener("click",goBack);
+$("#homeBtn").addEventListener("click",()=>{
+  if(!$("#spot").hidden) closeSpot();
+  lastSim="brief";
+  viewStack=[];
+  show("brief",{push:false});
+});
 ["brief","build","story","targets","targetResults","whip","receipt"].forEach(()=>{});
 
 $("#startBtn").addEventListener("click",()=>{
