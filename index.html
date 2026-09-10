@@ -111,6 +111,7 @@ h1,h2,h3,h4{text-wrap:balance}
 .clock button:hover{border-color:var(--ui);color:var(--ink)}
 
 .wrap{max-width:1400px;margin:0 auto;padding:24px 20px 120px}
+[hidden]{display:none!important}
 .view[hidden]{display:none}
 .kicker{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 
@@ -976,7 +977,6 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
       <div><span class="n" id="holdTeam">Team</span><span class="k">Team</span></div>
       <div><span class="n num" id="holdNet">$0</span><span class="k">10-year reduction</span></div>
       <div><span class="n num" id="holdApproval">47%</span><span class="k">Approval</span></div>
-      <div><span class="n num" id="holdAlign">50</span><span class="k">Alignment</span></div>
     </div>
     <div class="hold-status" id="holdVoiceStatus">Please wait to proceed.</div>
     <div style="margin-top:26px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
@@ -1030,7 +1030,7 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
     <h4>Running it in thirty minutes</h4>
     <ul>
       <li><strong>2 min</strong> — read the Director's memo and the panel of what the President actually requested. Stress that there is no target, and that they are not writing their own budget.</li>
-      <li><strong>14 min</strong> — build. Teams will start by cutting foreign aid and will discover it is a rounding error. The scoreboard gives them an alignment score and a live floor estimate, so they can iterate rather than guess.</li>
+      <li><strong>14 min</strong> — build. Teams will start by cutting foreign aid and will discover it is a rounding error. The scoreboard gives them a live floor estimate, so they can iterate rather than guess.</li>
       <li><strong>6 min</strong> — teams land on the holding screen after submission. When you are ready, have them click Continue; the spot opens full screen with a voiceover. Let it run once without commentary, then talk over the replay.</li>
       <li><strong>6 min</strong> — the strategy choice, targeted member whip operation, and final count.</li>
       <li><strong>2 min</strong> — screenshots of the confirmation screen.</li>
@@ -1043,9 +1043,9 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
       <li><em>Scale.</em> The popular cuts are small and the big cuts are unpopular. Foreign aid polls at 49% cut / 21% increase and saves $187B over ten years. Medicaid caps save up to $893B and 17% of the public supports cutting Medicaid at all.</li>
       <li><em>Visibility.</em> Arnold's argument, made concrete. The cuts that generate ads are the ones where a voter can see a cost and connect it back to a name. Ending a subsidy for school meals saves $14B and produces a devastating thirty seconds; modifying Medicare Advantage risk adjustment can save $1 trillion and produces nothing at all.</li>
       <li><em>Obfuscation is a strategy, not an accident.</em> "Restructure it" is the Pierson play — cap growth instead of cutting, grandfather current beneficiaries, phase in after the election. It keeps most of the money and defuses most of the ad. Ask them whether that is good government.</li>
-      <li><em>It is not their budget.</em> The alignment score is the first thing that surprises them — a technically defensible package can score 20 because it cuts veterans, flat-lines defense and raises a tax. Writing in someone else's voice is most of what policy staff actually do, and it is worth naming out loud.</li>
+      <li><em>It is not their budget.</em> A technically defensible package can still create political problems because it cuts veterans, flat-lines defense or raises a tax. Writing in someone else's voice is most of what policy staff actually do, and it is worth naming out loud.</li>
       <li><em>The money is where the ads are not.</em> The path that actually passes runs through Medicare Advantage risk adjustment, benchmark payments and hospital payment rules — a trillion dollars of low-visibility savings that no opposition spot can hold. Teams that go straight at Medicaid lose their own swing members for a fraction of the money.</li>
-      <li><em>Passage is a separate problem from arithmetic.</em> Most first budgets die in the whip count — the instinctive one lands around 133 of 218. Three routes work, and they have been tested: <strong>the party budget</strong> (defense up, nondefense down, health payment reform, a modest Medicaid cap paired with a rural hospital fund); <strong>the technocrat's budget</strong> (a trillion out of Medicare Advantage and hospital payment rules, nothing visible at all); and <strong>governing from the middle</strong> (real revenue, Medicaid and Social Security untouched, hardliners lost, 42 crossovers gained). The third scores terribly on alignment. That tension is the assignment.</li>
+      <li><em>Passage is a separate problem from arithmetic.</em> Most first budgets die in the whip count — the instinctive one lands around 133 of 218. Three routes work, and they have been tested: <strong>the party budget</strong> (defense up, nondefense down, health payment reform, a modest Medicaid cap paired with a rural hospital fund); <strong>the technocrat's budget</strong> (a trillion out of Medicare Advantage and hospital payment rules, nothing visible at all); and <strong>governing from the middle</strong> (real revenue, Medicaid and Social Security untouched, hardliners lost, 42 crossovers gained). The coalition you build determines the tradeoffs you face.</li>
       <li><em>Restructuring is not only a poll play.</em> Watch for the team whose Medicaid cap gets restructured to a growth cap and who thereby drops back under the rural bloc's threshold and wins 22 votes they had lost. Nobody designs that on purpose the first time.</li>
     </ul>
 
@@ -1306,34 +1306,6 @@ function approval(){
   // compress: a budget can be unpopular without being impossible
   return Math.max(18,Math.min(72,Math.round(47 + 24*Math.tanh(net/40))));
 }
-/* How closely the draft tracks the administration's own FY2027 request. */
-function alignment(){
-  let a=50; const notes=[];
-  const add=(pts,txt)=>{a+=pts; if(txt) notes.push([pts,txt])};
-  const dodUp = sel.adddod!=null ? amount(OPTS.find(o=>o.id==="adddod")) : 0;
-  const dodDown = catSum("defense");
-  if(dodUp>0) add(Math.min(24,8+dodUp/50), "Defense is up. His request raised it $445B.");
-  if(dodDown>200) add(-24,"You cut the defense topline. His request raised it sharply.");
-  else if(dodDown>0) add(-6,"Defense programs trimmed. He proposed the opposite.");
-  if(dodUp===0 && dodDown<=0) add(-12,"Defense is flat. His request called it the whole point.");
-  const nddCut=catSum("ndd");
-  if(nddCut>=300) add(14,"Nondefense discretionary is down, as his request proposed.");
-  else if(nddCut<=0) add(-10,"Nondefense discretionary untouched. His request cut it 10%.");
-  if(sel.intl!=null) add(10,"International affairs cut — his deepest proportional reduction.");
-  if(sel.addintl!=null) add(-12,"You increased international affairs. His request cut it 30%.");
-  if(sel.border!=null) add(10,"Immigration enforcement funded.");
-  const vaHit=["vameans","vaolder","vamed"].some(id=>sel[id]!=null);
-  if(vaHit) add(-20,"You cut veterans' benefits. His request raised VA 9%.");
-  const seniorHit=["fra","ssuniform","sshigh","partb"].some(id=>sel[id]!=null);
-  if(seniorHit) add(-18,"Social Security or Medicare benefits are cut. His request proposes neither.");
-  const tax=taxIncrease();
-  if(tax>600) add(-26,"A large broad tax increase. Not this administration.");
-  else if(tax>200) add(-14,"Net tax increases in a Republican budget.");
-  if(sel.medcap!=null||sel.fmap!=null) add(6,"Medicaid restructuring is consistent with the reconciliation record.");
-  if(sel.ctc!=null) add(5,"A family tax priority.");
-  notes.sort((x,y)=>Math.abs(y[0])-Math.abs(x[0]));
-  return {score:Math.max(0,Math.min(100,Math.round(a))), notes:notes.slice(0,3)};
-}
 function floorEstimate(){ return factions().filter(f=>!f.no).reduce((a,f)=>a+f.s,0); }
 function debt2036(){
   const net=netTotal();
@@ -1479,20 +1451,6 @@ function renderScore(){
   $("#sbAppr").textContent=ap+"%";
   $("#sbCount").textContent=chosen().length+" option"+(chosen().length===1?"":"s");
   $("#teamTag").textContent=team;
-  const A=alignment();
-  if($("#alignBig")){
-    $("#alignBig").textContent=A.score;
-    $("#alignBig").className="v num "+(A.score>=62?"save":A.score<38?"cost":"");
-    $("#alignMeter").style.width=A.score+"%";
-    $("#alignMeter").style.background=A.score>=62?"var(--save)":A.score>=42?"var(--ui)":"var(--cost)";
-    $("#alignSub").textContent = !chosen().length ? "Nothing chosen yet"
-      : A.score>=72?"This could go out under his name."
-      : A.score>=55?"Recognisably his, with edges to sand off."
-      : A.score>=38?"Reads like somebody else's budget in places."
-      : "This is not the budget you were asked to write.";
-    $("#alignNotes").innerHTML = A.notes.map(([p,t])=>
-      `<div class="flag ${p>0?"ok":"bad"}" style="margin-bottom:7px"><span class="fi">${p>0?"+":"−"}</span><span>${t}</span></div>`).join("");
-  }
   const fl=floorEstimate();
   $("#floorBig").textContent=chosen().length?fl:"—";
   $("#floorBig").className="v num "+(fl>=218?"save":"cost");
@@ -3119,12 +3077,11 @@ function renderReceipt(){
 }
 
 function renderHold(){
-  const net=netTotal(), ap=approval(), A=alignment();
+  const net=netTotal(), ap=approval();
   if(running) toggleClock();
   $("#holdTeam").textContent=team;
   $("#holdNet").textContent=(net>=0?"":"−")+fmtB(Math.abs(net));
   $("#holdApproval").textContent=ap+"%";
-  $("#holdAlign").textContent=A.score;
   updateVoiceStatus();
   show("hold");
 }
