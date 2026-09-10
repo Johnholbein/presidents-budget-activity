@@ -885,6 +885,7 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
     <span class="ts-a">Tap for sound</span>
     <span class="ts-b">your browser blocked audio until you click</span>
   </button>
+  <button type="button" class="next" id="spotProceed" hidden>Proceed</button>
   <button type="button" class="next" id="spotNext" hidden>Continue to response choices</button>
   <div class="bar"><i id="spotBar"></i></div>
 </div>
@@ -2626,7 +2627,7 @@ function thud(){
 const deEnt=t=>{const d=document.createElement("textarea");d.innerHTML=t;return d.value.replace(/[“”"]/g,"")};
 
 /* --- the spot itself --- */
-let spotRAF=null, spotT0=0, spotBeats=[], spotRunId=0, activeBeatIndex=-1, activeBeatStart=0;
+let spotRAF=null, spotT0=0, spotBeats=[], spotRunId=0, activeBeatIndex=-1, activeBeatStart=0, spotProceedGate=null;
 let spotLen=25600;
 function spokenAmount(v){
   return v>=1000 ? (v/1000).toFixed(1).replace(/\.0$/,"")+" trillion dollars" : Math.round(v)+" billion dollars";
@@ -2674,7 +2675,7 @@ function buildSpot(o,lines){
   const photoFor=i=>TRUMP_IMAGES.length ? TRUMP_IMAGES[(seed+i)%TRUMP_IMAGES.length] : null;
   const vo=spotVoiceTexts(o,lines);
   spotBeats=sequenceSpotBeats([
-    {d:6000, min:6000, cls:"slate", scene:null, vo:"",
+    {d:6000, min:6000, cls:"slate", scene:null, vo:"", gate:true,
      html:`<p><span class="stamp">Tuesday &middot; 6:14 a.m.</span>
            Your draft budget leaked overnight.<br>The opposition cut this by noon.</p>`},
     {min:3800, cls:"pan-in", scene:sc, photo:photoFor(0), voiceIndex:0,
@@ -2709,6 +2710,16 @@ function buildSpot(o,lines){
      </div>`).join("");
 }
 function clearVo(){ voTimers.forEach(clearTimeout); voTimers=[]; stopSpeech(); }
+function clearSpotProceedGate(){
+  const gate=spotProceedGate, btn=$("#spotProceed");
+  if(gate){
+    clearTimeout(gate.timer);
+    btn&&btn.removeEventListener("click",gate.onClick);
+    gate.resolve(false);
+    spotProceedGate=null;
+  }
+  if(btn) btn.hidden=true;
+}
 function hideTapPrompt(){ const b=$("#spotTap"); if(b) b.hidden=true; }
 function showTapPrompt(){
   const b=$("#spotTap"); if(!b) return;
@@ -2722,6 +2733,33 @@ function showTapPrompt(){
   b.hidden=false;
 }
 const waitMs=ms=>new Promise(resolve=>voTimers.push(setTimeout(resolve,ms)));
+function waitForSpotProceed(runId,delay=6000){
+  clearSpotProceedGate();
+  const btn=$("#spotProceed");
+  if(!btn) return Promise.resolve(true);
+  btn.hidden=true;
+  return new Promise(resolve=>{
+    const cleanup=()=>{
+      clearTimeout(timer);
+      btn.removeEventListener("click",onClick);
+      btn.hidden=true;
+      spotProceedGate=null;
+    };
+    const onClick=()=>{
+      if(runId!==spotRunId) return;
+      cleanup();
+      primeAudio();
+      resolve(true);
+    };
+    const timer=setTimeout(()=>{
+      if(runId!==spotRunId){ cleanup(); resolve(false); return; }
+      btn.hidden=false;
+      btn.focus();
+    },delay);
+    spotProceedGate={timer,onClick,resolve};
+    btn.addEventListener("click",onClick);
+  });
+}
 function setSpotBeat(i){
   activeBeatIndex=i;
   activeBeatStart=performance.now();
@@ -2760,7 +2798,7 @@ function startSpotProgress(runId){
 }
 async function runSpot(){
   const runId=++spotRunId;
-  cancelAnimationFrame(spotRAF); clearVo(); hideTapPrompt(); startBed();
+  cancelAnimationFrame(spotRAF); clearVo(); clearSpotProceedGate(); hideTapPrompt(); startBed();
   const nextBtn=$("#spotNext"); if(nextBtn) nextBtn.hidden=true;
   voHeard=false;
   spotT0=performance.now();
@@ -2775,6 +2813,11 @@ async function runSpot(){
     setSpotBeat(i);
     thud();
     stopSpeech();
+    if(b.gate){
+      await waitForSpotProceed(runId,b.min||6000);
+      await waitMs(220);
+      continue;
+    }
     let speechDone=false;
     const speechDonePromise=new Promise(resolve=>{
       speakBeatVoice(b,i,()=>{ speechDone=true; resolve(); });
@@ -2802,7 +2845,7 @@ function openSpot(){
 }
 function closeSpot(){
   spotRunId++;
-  cancelAnimationFrame(spotRAF); clearVo(); stopBed();
+  cancelAnimationFrame(spotRAF); clearVo(); clearSpotProceedGate(); stopBed();
   $$("#spotBeats .clipframe").forEach(f=>f.removeAttribute("src"));
   const nextBtn=$("#spotNext"); if(nextBtn) nextBtn.hidden=true;
   const sp=$("#spot"); sp.hidden=true; sp.setAttribute("aria-hidden","true");
