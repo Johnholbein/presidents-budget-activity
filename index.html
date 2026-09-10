@@ -566,6 +566,17 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
 .spot .clipprompt strong{display:block;font-family:Newsreader,Georgia,serif;font-size:clamp(27px,4.2vw,58px);
   letter-spacing:0;text-transform:none;font-weight:500;margin-top:8px}
 .spot .beat.end{background:#8E1F0E}
+/* Pre-roll slate: the leak. Deliberately plain — this is not part of the ad.
+   The card speaks to the student; everything after it speaks to voters. */
+.spot .beat.slate{background:#05070A}
+.spot .beat.slate .scrim{display:none}
+.spot .beat.slate .btext{place-items:center;padding:8vh 9vw}
+.spot .beat.slate p{font-family:"IBM Plex Mono",monospace;font-weight:400;
+  font-size:clamp(14px,1.95vw,24px);line-height:1.6;max-width:44ch;letter-spacing:-.005em;
+  color:#E8E6E1;text-shadow:none}
+.spot .beat.slate p::after{display:none}
+.spot .beat.slate .stamp{display:block;font-size:clamp(9.5px,1.25vw,13px);letter-spacing:.28em;
+  text-transform:uppercase;color:#C4442A;margin-bottom:22px}
 .spot .beat.end p{font-family:"IBM Plex Mono",monospace;font-size:clamp(13px,1.8vw,20px);
   letter-spacing:.16em;text-transform:uppercase;line-height:1.9;max-width:34ch;text-shadow:none}
 .spot .beat.end .disc{display:block;margin-top:22px;font-size:clamp(9px,1.1vw,11px);
@@ -721,12 +732,7 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
         </div>
         <p>You work for the Trump administration. Russ Vought runs this office, and the budget you draft goes out under the President's name in February. Nobody here is asking what you would do.</p>
         <p>The baseline is what it is. Deficits run <strong>$1.9 trillion this year and reach $3.1 trillion by 2036</strong>; debt held by the public goes from <strong>101% of GDP to 120%</strong>.</p>
-        <p><strong>What counts as a good draft:</strong></p>
-        <ol>
-          <li>It has to read like this President's budget. There is a scorecard for that on the right and it is not decoration.</li>
-          <li>The arithmetic has to survive a hearing. If you claim savings, they have to be real and they have to be scored.</li>
-          <li>It needs a ten-year deficit-reduction number your team can defend. There is no magic target; there is only whether you can explain what you chose.</li>
-        </ol>
+        <p><strong>What counts as a good draft:</strong> it has to read like this President's budget. The scorecard on the right is how you tell.</p>
         <p>Then it goes public, and you find out what you actually wrote.</p>
       </div>
 
@@ -2668,6 +2674,9 @@ function buildSpot(o,lines){
   const photoFor=i=>TRUMP_IMAGES.length ? TRUMP_IMAGES[(seed+i)%TRUMP_IMAGES.length] : null;
   const vo=spotVoiceTexts(o,lines);
   spotBeats=sequenceSpotBeats([
+    {d:2800, min:2600, cls:"slate", scene:null, vo:"",
+     html:`<p><span class="stamp">Tuesday &middot; 6:14 a.m.</span>
+           Your draft budget leaked overnight.<br>The opposition cut this by noon.</p>`},
     {min:3800, cls:"pan-in", scene:sc, photo:photoFor(0),
      vo:vo[0],
      html:`<p>${lines[0]}</p>`},
