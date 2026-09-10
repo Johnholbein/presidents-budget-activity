@@ -103,6 +103,7 @@ h1,h2,h3,h4{text-wrap:balance}
 .backbtn:hover:not(:disabled){border-color:var(--ui);color:var(--ink)}
 .backbtn:disabled{opacity:.42;cursor:default}
 .clock{display:flex;align-items:center;gap:7px}
+.clock .label{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .clock .t{font-family:"IBM Plex Mono",monospace;font-size:18px;min-width:60px;text-align:right}
 .clock .t.low{color:var(--cost)}
 .clock button{background:var(--panel-2);border:1px solid var(--rule);color:var(--ink-2);
@@ -1145,6 +1146,7 @@ input[type=text]{padding:12px 14px;min-width:230px}
   </div>
   <button type="button" class="backbtn" id="backBtn" disabled>Back</button>
   <div class="clock">
+    <span class="label">Budget drafting timer</span>
     <span class="t mono" id="clock">30:00</span>
     <button id="clockToggle">Start</button>
     <button id="clockReset">Reset</button>
@@ -1388,6 +1390,7 @@ input[type=text]{padding:12px 14px;min-width:230px}
     <span class="kicker">Thursday · the majority whip's office</span>
     <h2>Now count the votes.</h2>
     <p class="lede">A President's budget is a request, and a request that cannot pass is a press release. The majority holds 220 seats. You need 218.</p>
+    <p class="grade-note"><strong>Grading note:</strong> Passing the budget is not what determines your grade. We will grade your good-faith engagement with making a defensible budget that Trump would plausibly support.</p>
   </div>
   <div class="whipgrid" style="margin-top:24px">
     <div class="panel">
