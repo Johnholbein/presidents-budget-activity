@@ -589,15 +589,6 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
 .spot .beat.careend p{position:relative;font-family:Newsreader,Georgia,serif;font-size:clamp(46px,10vw,128px);
   letter-spacing:0;text-transform:none;line-height:.95;max-width:10ch;font-weight:600}
 .spot .beat.careend .disc{font-family:"IBM Plex Mono",monospace;font-weight:400;line-height:1.7}
-.spot .tapsound{
-  position:absolute;left:50%;bottom:calc(5.2vh + 12px);transform:translateX(-50%);z-index:7;
-  background:rgba(255,255,255,.94);color:#10141B;border:0;padding:13px 26px;
-  display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;
-}
-.spot .tapsound[hidden]{display:none}
-.spot .tapsound .ts-a{font-family:"IBM Plex Mono",monospace;font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-weight:600}
-.spot .tapsound .ts-b{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.06em;color:#4A5666}
-.spot .tapsound:hover{background:#fff}
 .spot .next{
   position:absolute;left:50%;bottom:calc(5.2vh + 38px);transform:translateX(-50%);z-index:8;
   border:0;background:#fff;color:#10141B;padding:16px 28px;min-width:min(360px,calc(100vw - 44px));
@@ -882,10 +873,6 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
     <button type="button" id="spotReplay">Replay</button>
     <button type="button" id="spotClose">Skip · Esc</button>
   </div>
-  <button type="button" class="tapsound" id="spotTap" hidden>
-    <span class="ts-a">Tap for sound</span>
-    <span class="ts-b">your browser blocked audio until you click</span>
-  </button>
   <button type="button" class="next" id="spotProceed" hidden>Proceed</button>
   <button type="button" class="next" id="spotNext" hidden>Continue to response choices</button>
   <div class="bar"><i id="spotBar"></i></div>
@@ -2676,7 +2663,7 @@ function buildSpot(o,lines){
   const photoFor=i=>TRUMP_IMAGES.length ? TRUMP_IMAGES[(seed+i)%TRUMP_IMAGES.length] : null;
   const vo=spotVoiceTexts(o,lines);
   spotBeats=sequenceSpotBeats([
-    {d:6000, min:6000, cls:"slate", scene:null, vo:"", gate:true,
+    {d:5000, min:5000, cls:"slate", scene:null, vo:"", gate:true,
      html:`<p><span class="stamp">Tuesday &middot; 6:14 a.m.</span>
            Your draft budget leaked overnight.<br>The opposition cut this by noon.</p>`},
     {min:3800, cls:"pan-in", scene:sc, photo:photoFor(0), voiceIndex:0,
@@ -2721,22 +2708,9 @@ function clearSpotProceedGate(){
   }
   if(btn) btn.hidden=true;
 }
-function hideTapPrompt(){ const b=$("#spotTap"); if(b) b.hidden=true; }
-function showTapPrompt(){
-  const b=$("#spotTap"); if(!b) return;
-  const activeBeat=spotBeats[activeBeatIndex];
-  if(activeBeat && (activeBeat.gate || /\bend\b/.test(activeBeat.cls||""))) return;
-  if((!ALLOW_BROWSER_TTS_FALLBACK||!window.speechSynthesis)&&!aiVoiceReady()){
-    b.querySelector(".ts-a").textContent="Voiceover unavailable here";
-    b.querySelector(".ts-b").textContent=`${AI_TTS_PROVIDER} is not connected for this run`;
-  }else{
-    b.querySelector(".ts-a").textContent="Tap for sound";
-    b.querySelector(".ts-b").textContent="your browser blocked audio until you click";
-  }
-  b.hidden=false;
-}
+function hideTapPrompt(){}
 const waitMs=ms=>new Promise(resolve=>voTimers.push(setTimeout(resolve,ms)));
-function waitForSpotProceed(runId,delay=6000){
+function waitForSpotProceed(runId,delay=5000){
   clearSpotProceedGate();
   const btn=$("#spotProceed");
   if(!btn) return Promise.resolve(true);
@@ -2751,7 +2725,6 @@ function waitForSpotProceed(runId,delay=6000){
     const onClick=()=>{
       if(runId!==spotRunId) return;
       cleanup();
-      hideTapPrompt();
       primeAudio();
       resolve(true);
     };
@@ -2802,13 +2775,10 @@ function startSpotProgress(runId){
 }
 async function runSpot(){
   const runId=++spotRunId;
-  cancelAnimationFrame(spotRAF); clearVo(); clearSpotProceedGate(); hideTapPrompt(); startBed();
+  cancelAnimationFrame(spotRAF); clearVo(); clearSpotProceedGate(); startBed();
   const nextBtn=$("#spotNext"); if(nextBtn) nextBtn.hidden=true;
   voHeard=false;
   spotT0=performance.now();
-  /* If nothing has actually been spoken shortly after the spot starts, the browser
-     blocked it. Say so, and offer a direct click — which always counts as a gesture. */
-  if(soundOn && (aiVoiceReady()||ALLOW_BROWSER_TTS_FALLBACK)) voTimers.push(setTimeout(()=>{ if(!voHeard) showTapPrompt(); },1700));
   $$("#spotBeats .beat .clipframe").forEach(f=>f.removeAttribute("src"));
   startSpotProgress(runId);
   for(let i=0;i<spotBeats.length;i++){
@@ -2818,7 +2788,7 @@ async function runSpot(){
     thud();
     stopSpeech();
     if(b.gate){
-      await waitForSpotProceed(runId,b.min||6000);
+      await waitForSpotProceed(runId,b.min||5000);
       await waitMs(220);
       continue;
     }
@@ -2871,12 +2841,6 @@ $("#spotSound").addEventListener("click",()=>{
   if(!soundOn){ clearVo(); stopBed(); } else { primeAudio(); }
 });
 paintSound();
-$("#spotTap").addEventListener("click",()=>{
-  hideTapPrompt(); primeAudio();
-  const t=performance.now()-spotT0;
-  const b=spotBeats.filter(x=>t>=x.t).pop() || spotBeats[0];
-  if(b && !b.gate && !/\bend\b/.test(b.cls||"")) speakBeatVoice(b,spotBeats.indexOf(b));
-});
 $("#spotReplay").addEventListener("click",()=>{primeAudio();voHeard=false;runSpot()});
 $("#spotClose").addEventListener("click",closeSpot);
 $("#spotNext").addEventListener("click",closeSpot);
