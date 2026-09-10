@@ -141,11 +141,12 @@ h1,h2,h3,h4{text-wrap:balance}
   background:var(--panel);border:1px solid var(--rule);box-shadow:var(--shadow);
   padding:28px 30px;margin-top:30px;max-width:76ch;
 }
-.memo .hdr{border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:18px}
+.memo .hdr{position:relative;border-bottom:2px solid var(--ink);padding:0 88px 12px 0;margin-bottom:18px;min-height:72px}
 .memo .hdr dl{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;margin:0;
   font-family:"IBM Plex Mono",monospace;font-size:12.5px}
 .memo .hdr dt{color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-size:10.5px;padding-top:2px}
 .memo .hdr dd{margin:0}
+.memo-seal{position:absolute;right:0;top:0;width:72px;height:72px;object-fit:contain}
 .memo p{margin:0 0 13px;color:var(--ink-2)}
 .memo p strong{color:var(--ink)}
 .memo ol{color:var(--ink-2);padding-left:20px;margin:0 0 13px}
@@ -869,7 +870,8 @@ body{
 }
 .memo .hdr{
   border-bottom:1px solid var(--rule);
-  padding-bottom:16px;
+  padding:0 88px 16px 0;
+  min-height:72px;
 }
 .memo .hdr dl{
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -1181,6 +1183,7 @@ input[type=text]{padding:12px 14px;min-width:230px}
             <div><dt>From</dt><dd>The Director's office</dd></div>
             <div><dt>Re</dt><dd>FY 2028 President's Budget proposal</dd></div>
           </dl>
+          <img class="memo-seal" src="omb-seal.webp" alt="Office of Management and Budget seal">
         </div>
         <p>You work for the Trump administration. Russ Vought runs this office, and the FY2028 budget proposal you draft goes out under the President's name in February. Nobody here is asking what you would do.</p>
         <p>The baseline is what it is. Deficits run <strong>$1.9 trillion this year and reach $3.1 trillion by 2036</strong>; debt held by the public goes from <strong>101% of GDP to 120%</strong>.</p>
