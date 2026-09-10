@@ -247,6 +247,13 @@ input[type=text]{font:inherit;background:var(--panel);border:1px solid var(--rul
   color:var(--muted);padding-top:1px;
 }
 .opt .odetail dd{margin:0;font-size:12.7px;color:var(--ink-2);line-height:1.38}
+.opt .osource{
+  margin:10px 0 0;padding-top:9px;border-top:1px solid var(--rule-soft);
+  font-size:12.7px;color:var(--ink-2);line-height:1.4;
+}
+.opt .osource strong{color:var(--ink)}
+.opt .osource a{color:var(--ui);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--ui) 42%,transparent)}
+.opt .osource a:hover{border-bottom-color:currentColor}
 .opt .oval{font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:500;white-space:nowrap;text-align:right;flex:0 0 auto}
 .opt .oval.save{color:var(--save)}
 .opt .oval.cost{color:var(--cost)}
@@ -471,6 +478,12 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
   max-width:960px;margin:0 auto 16px;padding:11px 16px;border:1px dashed var(--ui);color:var(--ui);
   font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.04em;text-align:center;
 }
+.grade-note{
+  margin:18px 0 0;padding:13px 15px;border:1px solid color-mix(in srgb,var(--warn) 48%,var(--rule));
+  background:var(--warn-bg);color:var(--ink-2);font-size:13.5px;line-height:1.42;
+}
+.grade-note strong{color:var(--ink)}
+.receipt .grade-note{margin:0 0 20px}
 .hold{max-width:900px;margin:0 auto;text-align:center}
 .hold-card{
   background:var(--panel);border:1px solid var(--rule);box-shadow:var(--shadow);
@@ -1174,6 +1187,7 @@ input[type=text]{padding:12px 14px;min-width:230px}
             <li>Screenshot the final receipt screen.</li>
           </ol>
           <p class="deliverable"><strong>Turn in:</strong> one screenshot of the final receipt screen. It should show your team name, selected options, deficit reduction, public approval, and floor result.</p>
+          <p class="grade-note"><strong>Grading note:</strong> Passing the budget is not what determines your grade. We will grade your good-faith engagement with making a defensible budget that Trump would plausibly support.</p>
         </div>
       </div>
 
@@ -1476,10 +1490,10 @@ input[type=text]{padding:12px 14px;min-width:230px}
     <h4>The four things the exercise makes visible</h4>
     <ul>
       <li><em>Scale.</em> The popular cuts are small and the big cuts are unpopular. Foreign aid polls at 49% cut / 21% increase and saves $187B over ten years. Medicaid caps save up to $893B and 17% of the public supports cutting Medicaid at all.</li>
-      <li><em>Traceability.</em> Arnold's argument, made concrete. The cuts that generate ads are the ones where a voter can trace a cost back to a name. Ending a subsidy for school meals saves $14B and produces a devastating thirty seconds; modifying Medicare Advantage risk adjustment can save $1 trillion and produces nothing at all.</li>
+      <li><em>Visibility.</em> Arnold's argument, made concrete. The cuts that generate ads are the ones where a voter can see a cost and connect it back to a name. Ending a subsidy for school meals saves $14B and produces a devastating thirty seconds; modifying Medicare Advantage risk adjustment can save $1 trillion and produces nothing at all.</li>
       <li><em>Obfuscation is a strategy, not an accident.</em> "Restructure it" is the Pierson play — cap growth instead of cutting, grandfather current beneficiaries, phase in after the election. It keeps most of the money and defuses most of the ad. Ask them whether that is good government.</li>
       <li><em>It is not their budget.</em> The alignment score is the first thing that surprises them — a technically defensible package can score 20 because it cuts veterans, flat-lines defense and raises a tax. Writing in someone else's voice is most of what policy staff actually do, and it is worth naming out loud.</li>
-      <li><em>The money is where the ads are not.</em> The path that actually passes runs through Medicare Advantage risk adjustment, benchmark payments and hospital payment rules — a trillion dollars of low-traceability savings that no opposition spot can hold. Teams that go straight at Medicaid lose their own swing members for a fraction of the money.</li>
+      <li><em>The money is where the ads are not.</em> The path that actually passes runs through Medicare Advantage risk adjustment, benchmark payments and hospital payment rules — a trillion dollars of low-visibility savings that no opposition spot can hold. Teams that go straight at Medicaid lose their own swing members for a fraction of the money.</li>
       <li><em>Passage is a separate problem from arithmetic.</em> Most first budgets die in the whip count — the instinctive one lands around 133 of 218. Three routes work, and they have been tested: <strong>the party budget</strong> (defense up, nondefense down, health payment reform, a modest Medicaid cap paired with a rural hospital fund); <strong>the technocrat's budget</strong> (a trillion out of Medicare Advantage and hospital payment rules, nothing visible at all); and <strong>governing from the middle</strong> (real revenue, Medicaid and Social Security untouched, hardliners lost, 42 crossovers gained). The third scores terribly on alignment. That tension is the assignment.</li>
       <li><em>Restructuring is not only a poll play.</em> Watch for the team whose Medicaid cap gets restructured to a growth cap and who thereby drops back under the rural bloc's threshold and wins 22 votes they had lost. Nobody designs that on purpose the first time.</li>
     </ul>
@@ -1488,7 +1502,7 @@ input[type=text]{padding:12px 14px;min-width:230px}
       <h5>Discussion prompts</h5>
       <ol>
         <li>What was the first cut you made, and what fraction of your total savings did it turn out to be?</li>
-        <li>Which of your choices would a challenger put in an ad, and could you have got the same money somewhere less traceable?</li>
+        <li>Which of your choices would a challenger put in an ad, and could you have got the same money somewhere less visible?</li>
         <li>You chose to restructure rather than reverse. Defend that to a reporter who calls it a gimmick.</li>
         <li>Your budget passed with crossover votes from the other party. What did that cost the President inside his own caucus, and does the budget survive the Senate?</li>
         <li>Arnold says legislators respond to <em>potential</em> preferences, not current ones. Where in this exercise did that show up?</li>
@@ -1496,7 +1510,7 @@ input[type=text]{padding:12px 14px;min-width:230px}
     </div>
 
     <h4>How this becomes an exam question</h4>
-    <p>Give a scenario: an administration proposes a package with two large, low-traceability savings and one small, highly traceable one. Ask which provision generates the opposition campaign and why; what Arnold predicts about how members of the majority behave; and what the administration should have done differently at the drafting stage.</p>
+    <p>Give a scenario: an administration proposes a package with two large, low-visibility savings and one small, highly visible one. Ask which provision generates the opposition campaign and why; what Arnold predicts about how members of the majority behave; and what the administration should have done differently at the drafting stage.</p>
 
     <h4>What connects to Memo #2</h4>
     <p>The blowback phase is the existing Lecture 7 TAA, absorbed. Teams leave with named interest groups and named constituencies opposed to a specific cut, with evidence — which is exactly the analysis Memo #2 asks for on their own topic.</p>
@@ -1535,7 +1549,7 @@ const CATS=[
 ];
 
 /* ===== options: real CBO scores, 2025–2034, $ billions ===== */
-/* pol = approval points at full size · trace 1-5 = how easily a voter traces the cost to you */
+/* pol = approval points at full size · trace 1-5 = public visibility of the cost */
 const OPTS=[
 /* ---- health ---- */
 {id:"medcap",c:"health",n:"Establish caps on federal spending for Medicaid",lo:459,hi:893,pol:-11,trace:5,cbo:"Option 4",
@@ -1582,7 +1596,7 @@ const OPTS=[
 {id:"sscpi",c:"retire",n:"Use an alternative inflation measure for Social Security COLAs",lo:278,hi:278,pol:-8,trace:3,cbo:"Option 27",
  d:"Index cost-of-living adjustments to the chained CPI, which grows about a quarter-point slower each year.",
  hit:"every beneficiary, a little more every year",
- poll:"The classic low-traceability benefit cut: the money is real, the moment it happens is invisible."},
+ poll:"The classic low-visibility benefit cut: the money is real, the moment it happens is invisible."},
 {id:"vameans",c:"retire",n:"Introduce means-testing for VA disability compensation",lo:384,hi:384,pol:-13,trace:5,cbo:"Option 23",
  d:"Phase out disability compensation above an income threshold.",hit:"disabled veterans",
  poll:"74% of Americans want veterans' spending increased — the highest of any category tested (Economist/YouGov, Feb 2026).",
@@ -1697,6 +1711,28 @@ const OPTS=[
  d:"Direct payments to sustain hospitals in low-volume rural markets.",hit:"—"}
 ];
 
+const ISSUE_SOURCES={
+  budget:{label:"White House OMB budget materials",url:"https://www.whitehouse.gov/omb/information-resources/budget/"},
+  obbb:{label:"White House: One Big Beautiful Bill",url:"https://www.whitehouse.gov/obbb/"},
+  law:{label:"GovInfo: H.R. 1, One Big Beautiful Bill Act",url:"https://www.govinfo.gov/app/details/BILLS-119hr1enr"},
+  platform:{label:"2024 Republican platform",url:"https://prod-static.gop.com/media/RNC2024-Platform.pdf"},
+  defense:{label:"White House priority: national security",url:"https://www.whitehouse.gov/priorities/national-security/"},
+  energy:{label:"White House executive order: Unleashing American Energy",url:"https://www.whitehouse.gov/presidential-actions/2025/01/unleashing-american-energy/"},
+  border:{label:"White House executive order: Protecting the American People Against Invasion",url:"https://www.whitehouse.gov/presidential-actions/2025/01/protecting-the-american-people-against-invasion/"}
+};
+const OPTION_SOURCE_BY_ID={
+  medcap:"obbb",fmap:"law",provtax:"law",partb:"platform",mabench:"budget",marisk:"budget",gme:"budget",opd:"budget",h340b:"budget",
+  fra:"platform",ssuniform:"platform",sshigh:"platform",sscpi:"platform",vameans:"budget",vaolder:"budget",
+  crop:"law",pelladd:"budget",meals:"law",tricare:"defense",fehb:"budget",
+  dodcut:"defense",milpay:"defense",carrier:"defense",f22:"defense",bah:"defense",
+  intl:"budget",ndd42:"budget",grants:"budget",fedpay:"budget",pellelig:"budget",natserv:"budget",davis:"budget",vamed:"budget",
+  rates:"obbb",surtax:"obbb",itemized:"obbb",capgains:"obbb",niit:"obbb",carried:"obbb",esi:"obbb",sscap:"platform",newpayroll:"obbb",corp:"obbb",foreign:"obbb",vat:"obbb",carbon:"energy",fuel:"energy",fintrans:"obbb",alcohol:"obbb",tobacco:"obbb",
+  adddod:"defense",addndd:"budget",addintl:"budget",border:"border",ctc:"obbb",rural:"law"
+};
+function optionSource(o){
+  return ISSUE_SOURCES[OPTION_SOURCE_BY_ID[o.id] || "budget"];
+}
+
 /* ===== state ===== */
 let team="Team", cat="health", sel={}, submitted=false, story=null, strategy=null, defendPlan="", defendScore=null, whipPitches={}, whipScores={}, whipLockedWins={}, finalized=false;
 let aiVoiceJob={key:"",status:"idle",parts:[],error:""};
@@ -1762,10 +1798,10 @@ function blowbackLabel(o){
   if(o.pol<=-8) return "High blowback";
   if(o.pol<=-3) return "Some blowback";
   if(o.pol>=4) return "Generally popular";
-  return "Low visible blowback";
+  return "Low blowback";
 }
 function traceLabel(o){
-  return ["","very hard","hard","possible","easy","very easy"][o.trace] || "unclear";
+  return ["","very low","low","medium","high","very high"][o.trace] || "unclear";
 }
 function optionScale(o){
   return o.hi>o.lo ? `${fmtB(o.lo)} to ${fmtB(o.hi)} over ten years` : `${fmtB(o.lo)} over ten years`;
@@ -1777,6 +1813,7 @@ function optionAction(o){
   return `Cuts, caps, or restructures federal support connected to ${hit}.`;
 }
 function optionDetailHtml(o){
+  const src=optionSource(o);
   const scoreSource=o.ill ? "classroom illustration based on the listed policy"
     : /^Mirror/.test(o.cbo) ? "classroom cost range mirrored from a CBO reduction option"
     : o.derived ? "classroom-scaled lower bound; high end is CBO's full option"
@@ -1788,9 +1825,10 @@ function optionDetailHtml(o){
         <dt>Change</dt><dd>${esc(optionAction(o))}</dd>
         <dt>Score</dt><dd>${esc(optionScale(o))}; ${esc(scoreSource)}.</dd>
         <dt>Pressure point</dt><dd>${esc(o.hit&&o.hit!=="—" ? o.hit : "Not concentrated in one obvious group.")}</dd>
-        <dt>Politics</dt><dd>${esc(blowbackLabel(o))}. Voters would find it ${esc(traceLabel(o))} to connect this choice to the budget.</dd>
+        <dt>Politics</dt><dd>${esc(blowbackLabel(o))}. Visibility: ${esc(traceLabel(o))}. Higher visibility means opponents can more easily turn this choice into an ad.</dd>
       </dl>
       ${o.poll?`<p class="opoll">${esc(o.poll)}</p>`:""}
+      ${src?`<p class="osource"><strong>Policy signal:</strong> <a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.label)}</a></p>`:""}
     </div>`;
 }
 function renderNav(){
@@ -1848,7 +1886,7 @@ function renderOpts(){
             ${o.ill?'<span class="tag ill">illustrative</span>':""}
             ${o.pol<=-8?'<span class="tag hot">high blowback</span>':""}
             ${o.pol>=4?'<span class="tag pop">polls well</span>':""}
-            <span class="tag">traceability ${"●".repeat(o.trace)}${"○".repeat(5-o.trace)}</span>
+            <span class="tag">visibility ${"●".repeat(o.trace)}${"○".repeat(5-o.trace)}</span>
           </div>
           ${on&&rangeable?`<div class="orange">
              <span class="oscale">${fmtB(o.lo)}</span>
@@ -2021,7 +2059,7 @@ const STRATS=[
    d:"Keep the policy, start it in the out-years. The score shrinks; the ad loses its present tense.",
    cost:["Keeps about 45% of the savings","Approval recovers most of the way","Everyone can see what you did"]},
   {id:"restructure",n:"Restructure it",keep:0.65,appr:5,theory:"Pierson: obfuscation",
-   d:"Cap the growth rate instead of cutting the level. Grandfather everyone currently enrolled. Same direction, no traceable moment.",
+   d:"Cap the growth rate instead of cutting the level. Grandfather everyone currently enrolled. Same direction, no single visible moment.",
    cost:["Keeps about 65% of the savings","Approval largely recovers","No single voter can point at the day it happened"]},
   {id:"defend",n:"Defend it",keep:1,appr:-5,theory:"Spend the capital",
    d:"Go on television. Argue the substance. Accept that the ad runs for six weeks.",
@@ -2290,7 +2328,7 @@ function prepareStory(){
 function renderStory(opts={}){
   if(!story&&!prepareStory()){ goWhip(); return; }
   const o=story.opt, ap=approval();
-  $("#storyLede").innerHTML=`By 6 a.m. the coverage had found the one line out of ${chosen().length} that a thirty-second spot can hold. It is not the biggest number in your budget. It is the one a voter can trace back to a name.`;
+  $("#storyLede").innerHTML=`By 6 a.m. the coverage had found the one line out of ${chosen().length} that a thirty-second spot can hold. It is not the biggest number in your budget. It is the one a voter can see and connect back to a name.`;
   const lines=story.lines||attackLines(o);
   $("#adcard").innerHTML=`
     <div class="adh"><span>Opposition spot · :30 · statewide buy</span><span>${o.n.length>44?o.n.slice(0,44)+"…":o.n}</span></div>
@@ -2300,7 +2338,7 @@ function renderStory(opts={}){
       <div class="adphotos" aria-label="Images of President Trump">
         ${trumpPhotoMarkup()}
       </div>
-      <p class="adfoot"><strong>What it's about:</strong> ${o.n} — ${fmtB(amount(o))} over ten years, ${Math.round(amount(o)/Math.max(1,netTotal())*100)}% of your package. Traceability rating ${o.trace} of 5.
+      <p class="adfoot"><strong>What it's about:</strong> ${o.n} — ${fmtB(amount(o))} over ten years, ${Math.round(amount(o)/Math.max(1,netTotal())*100)}% of your package. Visibility rating ${o.trace} of 5.
       ${o.poll?"<br><strong>The number behind it:</strong> "+o.poll:""}</p>
     </div>`;
   const drop=Math.max(3,Math.round(o.trace*1.6));
@@ -3452,6 +3490,8 @@ function renderReceipt(){
       </dl>
     </div>
 
+    <div class="grade-note"><strong>Grading note:</strong> Passing the budget is not what determines your grade. We will grade your good-faith engagement with making a defensible budget that Trump would plausibly support.</div>
+
     <div class="rstats">
       <div><span class="n" style="color:${net>0?"var(--save)":"var(--cost)"}">${(net>=0?"":"−")+fmtB(Math.abs(net))}</span><span class="k">10-year deficit reduction</span></div>
       <div><span class="n">${d36.toFixed(1)}%</span><span class="k">Debt / GDP 2036</span></div>
@@ -3469,7 +3509,7 @@ function renderReceipt(){
 
     ${story?`<div class="rsec">
       <h3>The attack, and the answer</h3>
-      <p style="margin:0 0 8px;font-size:14px;color:var(--ink-2)"><strong>Line attacked:</strong> ${story.opt.n} — traceability ${story.opt.trace} of 5, ${fmtB(amount(story.opt))} over ten years.</p>
+      <p style="margin:0 0 8px;font-size:14px;color:var(--ink-2)"><strong>Line attacked:</strong> ${story.opt.n} — visibility ${story.opt.trace} of 5, ${fmtB(amount(story.opt))} over ten years.</p>
       <p style="margin:0;font-size:14px;color:var(--ink-2)"><strong>Strategy chosen:</strong> ${strategy?strategy.n+" — "+strategy.theory+". Kept "+Math.round(strategy.keep*100)+"% of the savings.":"—"}</p>
       ${dq?`<p style="margin:8px 0 0;font-size:14px;color:var(--ink-2)"><strong>Defense memo:</strong> ${esc(defendPlan.trim())||"—"}</p>
       <p style="margin:8px 0 0;font-size:14px;color:var(--ink-2)"><strong>Message effect:</strong> ${dq.label}; ${dq.bonus>0?"+"+dq.bonus+" vote"+(dq.bonus===1?"":"s"):"no added votes"}.</p>`:""}
