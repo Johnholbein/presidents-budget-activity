@@ -2628,13 +2628,20 @@ function spokenAmount(v){
 function cleanVo(s){
   return plain(deEnt(s)).replace(/\s+/g," ").trim();
 }
+function expandMoneyForSpeech(text){
+  return cleanVo(text)
+    .replace(/\$([0-9]+(?:\.[0-9]+)?)\s*B\b/gi,"$1 billion dollars")
+    .replace(/\$([0-9]+(?:\.[0-9]+)?)\s*T\b/gi,"$1 trillion dollars")
+    .replace(/\b([0-9]+(?:\.[0-9]+)?)\s*B\b/g,"$1 billion")
+    .replace(/\b([0-9]+(?:\.[0-9]+)?)\s*T\b/g,"$1 trillion");
+}
 function spotVoiceTexts(o,lines){
   const amt=amount(o);
   return [
-    "Dangerous. "+cleanVo(lines[0]),
+    "Dangerous. "+expandMoneyForSpeech(lines[0]),
     "Wrong. "+spokenAmount(amt)+", over ten years in Donald Trump's budget. We can't afford it.",
-    cleanVo(lines[1]),
-    cleanVo(lines[2])+" Working for them, not you.",
+    expandMoneyForSpeech(lines[1]),
+    expandMoneyForSpeech(lines[2])+" Working for them, not you.",
     "Trump doesn't care."
   ];
 }
