@@ -1714,6 +1714,7 @@ function scoreWhipPitches(opts={}){
   });
   if(lock){
     const alreadyWon=WHIP_TARGETS.filter(t=>whipLockedWins[t.id]).length;
+    const hasAnyPitch=WHIP_TARGETS.some(t=>plain(whipPitches[t.id]||"").trim().length>0);
     const maxNewWins=alreadyWon ? 1 : 2;
     let candidates=WHIP_TARGETS
       .filter(t=>!whipLockedWins[t.id] && out[t.id] && out[t.id].ready)
@@ -1721,7 +1722,7 @@ function scoreWhipPitches(opts={}){
         (out[b.id].pts-out[a.id].pts) ||
         ((plain(whipPitches[b.id]||"").length)-(plain(whipPitches[a.id]||"").length)) ||
         a.name.localeCompare(b.name));
-    if(!alreadyWon && !candidates.length){
+    if(hasAnyPitch && !alreadyWon && !candidates.length){
       candidates=WHIP_TARGETS
         .filter(t=>!whipLockedWins[t.id] && out[t.id])
         .sort((a,b)=>
