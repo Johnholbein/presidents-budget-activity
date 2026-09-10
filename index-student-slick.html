@@ -186,6 +186,24 @@ input[type=text]{font:inherit;background:var(--panel);border:1px solid var(--rul
 .build-help div{background:var(--panel);padding:12px 14px}
 .build-help strong{display:block;font-size:13px;color:var(--ink);margin-bottom:3px}
 .build-help span{display:block;font-size:12.5px;color:var(--ink-2);line-height:1.35}
+.category-progress{
+  margin:0 0 16px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule);
+}
+.category-progress button{
+  background:var(--panel);border:0;color:var(--ink);text-align:left;padding:11px 12px;
+  min-height:74px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;
+}
+.category-progress button:hover{background:var(--panel-2)}
+.category-progress button[aria-current="true"]{box-shadow:inset 0 -3px 0 var(--ui)}
+.category-progress .cp-name{font-weight:600;font-size:12.5px;line-height:1.25}
+.category-progress .cp-meta{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.category-progress .cp-status,.category-progress .cp-value{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--muted);letter-spacing:.03em;
+}
+.category-progress .cp-status.on{color:var(--save)}
+.category-progress .cp-value.save{color:var(--save)}
+.category-progress .cp-value.cost{color:var(--cost)}
 
 .catnav{position:sticky;top:74px}
 .catnav button{
@@ -339,6 +357,13 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
 .defendbox textarea:focus{outline:2px solid color-mix(in srgb,var(--ui) 30%,transparent);outline-offset:2px}
 .defendbox .defbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .defendbox .defscore{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted)}
+.whip-guide{
+  margin:0 0 18px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule);
+}
+.whip-guide div{background:var(--panel);padding:13px 14px}
+.whip-guide strong{display:block;font-size:13px;color:var(--ink);margin-bottom:4px}
+.whip-guide span{display:block;font-size:12.5px;color:var(--ink-2);line-height:1.38}
 .targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
 .target{
   display:grid;grid-template-columns:92px 1fr;gap:14px;padding:14px;border:1px solid var(--rule);
@@ -606,6 +631,7 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
 @media (max-width:1180px){
   .build{grid-template-columns:1fr}
   .build-help{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .category-progress{grid-template-columns:repeat(2,minmax(0,1fr))}
   .catnav,.score{position:static}
   .catnav{display:flex;flex-wrap:wrap;gap:4px}
   .catnav button{width:auto;border-left:0;border-bottom:2px solid transparent}
@@ -615,12 +641,14 @@ figcaption{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
 }
 @media (max-width:680px){
   .build-help{grid-template-columns:1fr}
+  .category-progress{grid-template-columns:1fr}
   .adphotos{grid-template-columns:repeat(2,minmax(0,1fr))}
   .target{grid-template-columns:76px 1fr}
   .target img{width:76px;height:94px}
   .target.has-video{grid-template-columns:1fr}
   .target-video{max-width:220px}
   .target-results{grid-template-columns:1fr}
+  .whip-guide{grid-template-columns:1fr}
   .target-result{grid-template-columns:58px 1fr}
   .target-result img{width:58px;height:72px}
   .target-result .badge{grid-column:2;justify-self:start}
@@ -864,6 +892,27 @@ input[type=text]{padding:12px 14px;min-width:230px}
   margin-bottom:18px;
 }
 .build-help div{padding:15px 16px}
+.category-progress,.whip-guide{
+  border-radius:var(--radius);
+  overflow:hidden;
+  box-shadow:var(--shadow-soft);
+}
+.category-progress{
+  margin-bottom:20px;
+}
+.category-progress button{
+  min-height:84px;
+  padding:14px;
+  transition:background .15s ease,box-shadow .15s ease;
+}
+.category-progress button[aria-current="true"]{
+  background:color-mix(in srgb,var(--ui) 10%,var(--panel));
+}
+.category-progress .cp-name{font-size:13px}
+.whip-guide{
+  margin-bottom:20px;
+}
+.whip-guide div{padding:16px}
 .catnav,.score{top:86px}
 .catnav{
   padding:8px;
@@ -1179,6 +1228,7 @@ input[type=text]{padding:12px 14px;min-width:230px}
     <div><strong>Watch the scorecard</strong><span>Savings are not enough; approval and votes matter too.</span></div>
     <div><strong>Submit when ready</strong><span>You can revise later, but be ready to defend what you chose.</span></div>
   </div>
+  <div class="category-progress" id="categoryProgress" aria-label="Progress across budget priorities"></div>
   <div class="build">
     <nav class="catnav panel" id="catnav" aria-label="Budget categories"></nav>
 
@@ -1272,6 +1322,12 @@ input[type=text]{padding:12px 14px;min-width:230px}
     <p class="lede">A few members can bring small blocs with them. Read what each one needs, then write the pitch you would send before leadership locks the count.</p>
   </div>
   <div class="stage" style="max-width:1100px;margin-top:18px">
+    <div class="whip-guide" aria-label="What makes a whip pitch persuasive">
+      <div><strong>Name the concern</strong><span>Show that you heard the member's stated objection.</span></div>
+      <div><strong>Give local cover</strong><span>Mention the district, state, voters, jobs, hospitals, or families affected.</span></div>
+      <div><strong>Protect someone</strong><span>Offer a phase-in, exemption, waiver, grandfather rule, offset, or clear protection.</span></div>
+      <div><strong>Explain the tradeoff</strong><span>Connect the pitch back to deficit reduction, savings, taxpayers, or the budget.</span></div>
+    </div>
     <div class="panel">
       <div class="panel-h"><span>On-the-fence members</span><span class="mono" id="targetTotal">0 votes in play</span></div>
       <div class="panel-b">
@@ -1747,6 +1803,27 @@ function renderNav(){
     n.appendChild(b);
   });
 }
+function renderCategoryProgress(){
+  const box=$("#categoryProgress");
+  if(!box) return;
+  box.innerHTML="";
+  CATS.forEach(C=>{
+    const list=OPTS.filter(o=>o.c===C.id);
+    const picked=list.filter(o=>sel[o.id]!=null);
+    const s=catSum(C.id);
+    const b=el("button");
+    b.type="button";
+    b.setAttribute("aria-current", C.id===cat ? "true" : "false");
+    b.setAttribute("aria-label", `${C.name}: ${picked.length} of ${list.length} selected${s ? ", "+sgn(s) : ""}`);
+    b.innerHTML=`<span class="cp-name">${esc(C.name)}</span>
+      <span class="cp-meta">
+        <span class="cp-status ${picked.length?"on":""}">${picked.length ? picked.length+" selected" : "untouched"}</span>
+        <span class="cp-value ${s>0?"save":s<0?"cost":""}">${s?sgn(s):"—"}</span>
+      </span>`;
+    b.addEventListener("click",()=>{cat=C.id;renderAll()});
+    box.appendChild(b);
+  });
+}
 function renderOpts(){
   const C=CATS.find(c=>c.id===cat);
   $("#catTitle").textContent=C.name;
@@ -1923,7 +2000,7 @@ function renderDebtChart(){
      <figcaption>Simplified: baseline path less your ten-year savings, phased evenly, with 15% interest feedback.</figcaption>`;
 }
 
-function renderAll(){ renderNav(); renderOpts(); renderScore(); }
+function renderAll(){ renderNav(); renderCategoryProgress(); renderOpts(); renderScore(); }
 
 /* ===== the story ===== */
 function pickStory(){
